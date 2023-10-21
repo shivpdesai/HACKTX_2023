@@ -102,3 +102,29 @@ st.table(away_score_pred)
 mse = mean_squared_error(y_test_away, away_score_pred)
 
 print("Mean Squared Error: ", mse)
+
+#########
+
+
+#st.table((load_data([2023])))
+data = load_data([2023])
+# data1 is the cleaned up dataset for future games
+data1 = data[data['home_points'].isna()]
+
+# creating the boxes for eat future game. 
+for index, row in data.iterrows():
+    home_team = row['home_team']
+    away_team = row['away_team']
+    st.markdown(f"""
+    <div style="width: 200px; height: 200px; background-color: #FF5733; text-align: center; border-radius: 10px;
+     position: relative; display:inline-block">
+        <div style="position: absolute; top: 35px; left: 0; width: 100%;">
+            <span style="font-size: 16px;">{home_team} vs {away_team}</span>
+        </div>
+        <hr style="position: absolute; width: 100%; top: 50%; margin-top: -1px; border: 2px solid #000;">
+        <div style="position: absolute; bottom: 25px; left: 0; width: 100%;">
+            <span style="font-size: 16px;">Date: Oct 21 @ 6 pm</span><br>
+            <span style="font-size: 16px;">Location: Oracle Arena</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
