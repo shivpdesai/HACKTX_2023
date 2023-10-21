@@ -13,8 +13,6 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import accuracy_score
 
-st.title("Sports Betting")
-
 api_key = "Bearer x/c+JqSij5h1DddsMFpx2s35cXs49Xb9wUh0Sya02hnWui1jb/fqkEMKjHPVhTxv"
 headers = {"Authorization" : api_key}
 
@@ -51,68 +49,67 @@ def load_data(year):
 
     return pbp
 
-trainingData = load_data([2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021])
-df_2022 = load_data([2022])
 
-st.table(trainingData)
+def make_prediction(test):
+    trainingData = load_data([2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022])
 
-#home field, weather, player quality, player health, starting qb rating, fpi data, power ranking,
-win_factors = ['home_team', 'away_team', 'neutral_site']
-X_train = trainingData[win_factors]
-X_test = df_2022[win_factors]
+    #home field, weather, player quality, player health, starting qb rating, fpi data, power ranking,
+    win_factors = ['home_team', 'away_team', 'neutral_site']
+    X_train = trainingData[win_factors]
+    
+    y_train_away = trainingData['away_points']
+    y_train_home = trainingData['home_points']
+    
+    X_test = test[win_factors]
 
-y_train_away = trainingData['away_points']
-y_test_away = df_2022['away_points']
+    #One-Hot Encoding
+    cat_cols = ['home_team', 'away_team']
+    #num_cols = ['home_points', 'away_points']
+    bool_cols = ['neutral_site']
 
-y_train_home = trainingData['home_points']
-y_test_home = df_2022['home_points']
+    categorical_transformer = Pipeline(steps=[
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))
+    ])
 
-st.table(trainingData)
-
-#One-Hot Encoding
-cat_cols = ['home_team', 'away_team']
-#num_cols = ['home_points', 'away_points']
-bool_cols = ['neutral_site']
-
-categorical_transformer = Pipeline(steps=[
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))
-])
-
-# numeric_transformer = Pipeline(steps=[
-#     ('scaler', StandardScaler())
-# ])
+    # numeric_transformer = Pipeline(steps=[
+    #     ('scaler', StandardScaler())
+    # ])
 
     # For boolean features, you can apply no preprocessing, as they are already binary.
-boolean_transformer = "passthrough"
+    boolean_transformer = "passthrough"
 
-preprocessor = ColumnTransformer(
-transformers=[
-    #('num', numeric_transformer, num_cols),
-    ('cat', categorical_transformer, cat_cols),
-    ('bool', boolean_transformer, bool_cols)
-])
+    preprocessor = ColumnTransformer(
+    transformers=[
+        #('num', numeric_transformer, num_cols),
+        ('cat', categorical_transformer, cat_cols),
+        ('bool', boolean_transformer, bool_cols)
+    ])
 
-betting_model_away = RandomForestRegressor(n_estimators=100, random_state=42)
-betting_model_home = RandomForestRegressor(n_estimators=100, random_state=42)
+    betting_model_away = RandomForestRegressor(n_estimators=100, random_state=42)
+    betting_model_home = RandomForestRegressor(n_estimators=100, random_state=42)
 
-regression_pipeline_away = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('model', betting_model_away)
-])
+    regression_pipeline_away = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('model', betting_model_away)
+    ])
 
-regression_pipeline_home = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('model', betting_model_home)
-])
+    regression_pipeline_home = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('model', betting_model_home)
+    ])
 
-#get away score predictions
-regression_pipeline_away.fit(X_train, y_train_away)
-away_score_pred = regression_pipeline_away.predict(X_test)
+    #get away score predictions
+    regression_pipeline_away.fit(X_train, y_train_away)
+    away_score_pred = regression_pipeline_away.predict(X_test)
 
-#get home score predictions
-regression_pipeline_home.fit(X_train, y_train_home)
-home_score_pred = regression_pipeline_home.predict(X_test)
+    #get home score predictions
+    regression_pipeline_home.fit(X_train, y_train_home)
+    home_score_pred = regression_pipeline_home.predict(X_test)
 
-mse = mean_squared_error(y_test_away, away_score_pred)
+    data = {
+        'Away': away_score_pred,
+        'Home': home_score_pred
+    }
+    predictions = pd.DataFrame(data)
 
-print("Mean Squared Error: ", mse)
+    return predictions
