@@ -113,17 +113,6 @@ away_score_pred = regression_pipeline_away.predict(X_test)
 regression_pipeline_home.fit(X_train, y_train_home)
 home_score_pred = regression_pipeline_home.predict(X_test)
 
-mse_away = mean_squared_error(y_test_away, away_score_pred)
-mse_home = mean_squared_error(y_test_home, home_score_pred)
+mse = mean_squared_error(y_test_away, away_score_pred)
 
-df_2022['away_pred'] = away_score_pred
-df_2022['home_pred'] = home_score_pred
-
-st.text(mse_away)
-st.text(mse_home)
-
-print(mse_away)
-print(mse_home)
-
-st.table(df_2022)
-
+print("Mean Squared Error: ", mse)
