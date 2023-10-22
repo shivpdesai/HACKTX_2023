@@ -1,0 +1,74 @@
+from bet.py import pull_data
+from bet.py import make_prediction
+from hacktx.py import is_played
+from hacktx.py import team_schedule
+
+
+schedule = pull_data({2023})
+
+
+
+<html>
+<head>
+    <title>Part 2</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .schedule {
+            background-color: white;
+            color: black;
+            padding: 20px;
+            width: 45%;
+            border-radius: 10px;
+        }
+        .match {
+            margin: 15px 0;
+            border: 1px solid #000;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>*Insert team name here*</h1>
+    </header>
+    <div class="container">
+        <div class="schedule">
+            <h2>Past Schedule</h2>
+            <div class="match">
+                <p>Insert previous game 1</p>
+                <p>Insert score to previous game</p>
+            </div>
+            <div class="match">
+                <p>Insert Previous game 2</p>
+                <p>Insert score to previous game 2</p>
+            </div>
+            <!-- Add more past matches here -->
+        </div>
+        <div class="schedule">
+            <h2>Future Schedule</h2>
+            <div class="match">
+                <p>Insert future game 1 </p>
+                <p>Insert prediction to future game 1</p>
+            </div>
+            <div class="match">
+                <p>Future game 2</p>
+                <p>Insert prediction to future game 2</p>
+            </div>
+            <!-- Add more future matches here -->
+        </div>
+    </div>
+    <footer>
+        <p>&copy; Insert team name down here</p>
+    </footer>
+</body>
+</html>
