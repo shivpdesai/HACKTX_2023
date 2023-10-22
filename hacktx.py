@@ -3,13 +3,12 @@ from bet import load_data
 from bet import make_prediction
 import pandas as pd
 import numpy as np
+import math
 
 st.title("Betting App")
 
 df_2023 = load_data([2023])
 
-
-predictions = make_prediction(df_2023)
 
 @st.cache_data
 def team_schedule(name):
@@ -22,145 +21,130 @@ def team_schedule(name):
 def is_played(schedule):
     played = []
     for game in schedule.iterrows():
-        if game['home_points'].empty:
-            played.concat(False)
+        if math.isnan(game[1]['home_points']):
+            played.append(False)
         else:
-            played.concat(True)
+            played.append(True)
 
     return played
 
-schedule = team_schedule('Texas')
-played = is_played(schedule)
-print(played)
+def is_not_played(schedule):
+    played = []
+    for game in schedule.iterrows():
+        if math.isnan(game[1]['home_points']):
+            played.append(True)
+        else:
+            played.append(False)
 
+    return played
 
-st.table(schedule)
+def winPCT_played(played, team):
+    winPCT = []
+    weeks = 0
+    wins = 0
 
-<<<<<<< HEAD
-=======
-st.table(df_2023)
-user_input = st.text_input("Enter your name")
+    for game in played.iterrows():
+        weeks = weeks + 1
+        if (game[1]['home_team'] == team):
+            if game[1]['home_points'] > game[1]['away_points']:   
+                wins = wins + 1
 
+            
+        if (game[1]['away_team'] == team):
+            if game[1]['home_points'] < game[1]['away_points']:   
+                wins = wins + 1
+        
+        winPCT.append(wins/weeks)
+    
+    winPCT.insert(0, 1.0)
+    return winPCT
 
-#####################
-import streamlit as st
-import pandas as pd
-import numpy as np
-import json
-import matplotlib.pyplot as plt
-import requests
-from tqdm import tqdm as tqdm
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import mean_squared_error, r2_score
+def winPCT_played(played, team):
+    winPCT = []
+    weeks = 0
+    wins = 0
 
-st.title("Sports Betting")
+    for game in played.iterrows():
+        weeks = weeks + 1
+        if (game[1]['home_team'] == team):
+            if game[1]['home_points'] > game[1]['away_points']:   
+                wins = wins + 1 
+        if (game[1]['away_team'] == team):
+            if game[1]['home_points'] < game[1]['away_points']:   
+                wins = wins + 1
+        
+        winPCT.append(wins/weeks)
+    
+    return winPCT
 
-api_key = "Bearer x/c+JqSij5h1DddsMFpx2s35cXs49Xb9wUh0Sya02hnWui1jb/fqkEMKjHPVhTxv"
-headers = {"Authorization": api_key}
+def winPCT_to_play(played, team, pred):
+    winPCT = []
+    weeks = 0
+    wins = 0
 
-# year = 2019
-weeks = list(range(0, 16))
-conference = {'SEC', 'ACC', 'Big_12', 'Big_10', 'Pac-12'}
+    for game in played.iterrows():
+        weeks = weeks + 1
+        i = weeks -1
+        if (game[1]['home_team'] == team):
+            if (game[1]['is_played']):
+                if game[1]['home_points'] > game[1]['away_points']:   
+                    wins = wins + 1
+            else:
+                if pred['Home'][i] > pred['Away'][i]:   
+                    wins = wins + 1
+                winPCT.append(wins/weeks)
 
+        if (game[1]['away_team'] == team):
+            if (game[1]['is_played']):
+                if game[1]['home_points'] < game[1]['away_points']:   
+                    wins = wins + 1
+                    print(pred['Away'][1])
+            else:
+                if pred['Home'][i] < pred['Away'][i]:   
+                    wins = wins + 1
+                winPCT.append(wins/weeks)
+        
+    return winPCT
 
-@st.cache_data
-def load_data(year):
-    pbp_req = []
-    pbp = pd.DataFrame()
+def makeGraph(team):
+    schedule = team_schedule(team)
 
-    for yr in year:
-        for week in weeks:
-            parameters = {"year": yr, "week": week}
-            pbp_req = requests.get("https://api.collegefootballdata.com/games",
-                                   params=parameters,
-                                   headers=headers)
-            try:
-                x = pd.DataFrame(json.loads(pbp_req.text))
-                pbp = pd.concat([pbp, x])
-            except IndexError:
-                print('error')
-                pass
-            continue
+    played = is_played(schedule)
+    schedule['is_played'] = played
 
-    pbp = pbp.query("away_conference in ('SEC', 'ACC', 'Big 12', 'Big Ten', 'Pac-12')")
-    pbp = pbp.filter(items=['home_team', 'away_team', 'neutral_site', 'home_points', 'away_points'])
-    return pbp
+    predictions = make_prediction(schedule)
 
-'''
-trainingData = load_data([2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021])
-df_2022 = load_data([2022])
+    played_weeks = (schedule['is_played'] == True).sum()
+    not_played_weeks = schedule.shape[0] - played_weeks
 
-st.table(trainingData.head())
+    winPCTS_played = winPCT_played(schedule, team)
+    winPCTS_played = winPCTS_played[:played_weeks]
+    for i in range(not_played_weeks):
+        winPCTS_played.append(np.nan)
+    
+    winPCTS_to_play = winPCT_to_play(schedule, team, predictions)
+    for i in range(played_weeks):
+        winPCTS_to_play.insert(0,np.nan)
+    winPCTS_to_play[played_weeks - 1] = winPCTS_played[played_weeks - 1]
+    
+    schedule['winPCT_played'] = winPCTS_played
+    schedule['winPCT_to_played'] = winPCTS_to_play
 
-y_home_train = trainingData.home_points
-y_away_train = trainingData.away_points
+    
 
-# home field, weather, player quality, player health, starting qb rating, fpi data, power ranking,
-win_factors = ['home_team', 'away_team', 'neutral_site', 'home_points', 'away_points']
-X_train = trainingData[win_factors]
-X_test = df_2022['home_team', 'away_team', 'neutral_site', 'home_points', 'away_points']
+    x_played = []
+    for i in range(schedule.shape[0]):
+        x_played.append(i)
+    
+    x_pred = x_played[not_played_weeks:]
+    x_played = x_played[:played_weeks]
+    
+    data = {
+        'week': [1,2,3,4,5,6,7,8,9,10],
+        'played': schedule['winPCT_played'], 
+         'predictions': schedule['winPCT_to_played']}
 
-betting_model_home = DecisionTreeRegressor(random_state=1)
-betting_model_away = DecisionTreeRegressor(random_state=1)
+    df = pd.DataFrame(data)
 
-betting_model_home.fit(X_train, y_home_train)
-betting_model_away.fit(X_train, y_away_train)
-'''
+    return df
 
-#st.table((load_data([2023])))
-data = load_data([2023])
-#data1 = data.dropna(subset=['home_points'])
-data1 = data[data['home_points'].isna()]
-#st.table(data1)
-st.title("My app")
-user_input = st.text_input("Enter your name")
-
-# Add a button widget
-if st.button("Submit"):
-    st.write(f"Hello, {user_input}!")
-    # load data is all college football data for 2023
-
-
-
-#'''
-for index, row in data.iterrows():
-    home_team = row['home_team']
-    away_team = row['away_team']
-    st.markdown(f"""
-    <div style="width: 200px; height: 200px; background-color: #FF5733; text-align: center; border-radius: 10px; position: relative; display:inline-block;">
-        <div style="position: absolute; top: 35px; left: 0; width: 100%;justify-content: space-between;">
-            <span style="font-size: 16px;">{home_team} vs {away_team}</span>
-        </div>
-        <hr style="position: absolute; width: 100%; top: 50%; margin-top: -1px; border: 2px solid #000;">
-        <div style="position: absolute; bottom: 25px; left: 0; width: 100%;">
-            <span style="font-size: 16px;">Date: Oct 21 @ 6 pm</span>
-            <span style="font-size: 16px;">Location: Oracle Arena</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-#'''
-
-
-
-
-
-'''
-st.markdown("""
-<div style="width: 200px; height: 200px; background-color: #FF5733; text-align: center; border-radius: 10px; position: relative;">
-    <div style="position: absolute; top: 35px; left: 0; width: 100%;">
-        <span style="font-size: 18px;">Team A vs Team B</span>
-    </div>
-    <hr style="position: absolute; width: 100%; top: 50%; margin-top: -1px; border: 2px solid #000;">
-    <div style="position: absolute; bottom: 25px; left: 0; width: 100%;">
-        <span style="font-size: 16px;">Date: Oct 21 @ 6 pm</span><br>
-        <span style="font-size: 16px;">Location: Oracle Arena</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-'''
-
->>>>>>> 163087a2e769c7b0c90582aa69eb5e46f3bb1175
