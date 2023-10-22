@@ -5,13 +5,10 @@ import pandas as pd
 import numpy as np
 import math
 
-st.title("Betting App")
-
-df_2023 = load_data([2023])
-
 
 @st.cache_data
 def team_schedule(name):
+    df_2023 = load_data([2023])
     home_schedule = df_2023[df_2023["home_team"] == name]
     away_schedule = df_2023[df_2023["away_team"] == name]
     team_schedule = pd.concat([away_schedule, home_schedule])
@@ -141,3 +138,27 @@ def makeGraph(team):
     df = pd.DataFrame(data)
 
     return df
+
+def comp_games(team):
+    schedule = team_schedule(team)
+    play = is_played(schedule)
+    schedule['is_played'] = play
+    schedule = schedule[schedule['is_played'] == True]
+
+
+    return schedule
+    
+
+def future_games(team):
+    schedule = team_schedule(team)
+    play = is_played(schedule)
+    schedule['is_played'] = play
+    schedule = schedule[schedule['is_played'] == False]
+    preds = make_prediction(schedule)
+    away = preds['Away'].values
+    home = preds['Home'].values
+
+    schedule['away_pred'] = away
+    schedule['home_pred'] = home
+
+    return schedule
