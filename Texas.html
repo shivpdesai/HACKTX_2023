@@ -2,6 +2,7 @@ from bet.py import pull_data
 from bet.py import make_prediction
 from hacktx.py import is_played
 from hacktx.py import team_schedule
+import streamlit as st
 
 
 schedule = pull_data({2023})
@@ -39,14 +40,14 @@ schedule = pull_data({2023})
 </head>
 <body>
     <header>
-        <h1>*Insert team name here*</h1>
+        <h1>Texas</h1>
     </header>
     <div class="container">
         <div class="schedule">
             <h2>Past Schedule</h2>
             <div class="match">
-                <p>Insert previous game 1</p>
-                <p>Insert score to previous game</p>
+                <p>Texas @ Alabama</p>
+                <p>34 - 24</p>
             </div>
             <div class="match">
                 <p>Insert Previous game 2</p>
