@@ -162,3 +162,13 @@ def future_games(team):
     schedule['home_pred'] = home
 
     return schedule
+
+user_input = st.text_input("Enter some text:")
+
+# Display the input value
+if user_input:
+    df = makeGraph(user_input)
+    st.area_chart(df, x="week", y=['played', 'predictions'])
+else:
+    st.write("You haven't entered any text yet.")
+

@@ -591,8 +591,9 @@ def sec():
                         ''', unsafe_allow_html=True)
 
 
+
 # Sidebar navigation
-page = st.sidebar.radio("Select a page", ["Home", "ACC", "Big 10", "Big 12", "Pac 12", "SEC"])
+page = st.sidebar.radio("Select a page", ["Home", "ACC", "Big 10", "Big 12", "Pac 12", "SEC","Graph"])
 
 # Display the selected page based on the choice
 if page == "Home":
@@ -607,3 +608,5 @@ elif page == "Pac 12":
     pac12()
 elif page == "SEC":
     sec()
+elif page == "Graph":
+    pic()
