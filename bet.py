@@ -45,7 +45,7 @@ def load_data(year):
     pbp = pbp.query("away_conference in ('SEC', 'ACC', 'Big 12', 'Big Ten', 'Pac-12')")
     pbp = pbp.query("away_conference in ('SEC', 'ACC', 'Big 12', 'Big Ten', 'Pac-12')")
 
-    pbp = pbp.filter(items=['home_team', 'away_team', 'neutral_site', 'home_points', 'away_points', 'start_date'])
+    pbp = pbp.filter(items=['home_team', 'away_team', 'neutral_site', 'home_points', 'away_points', 'start_date', 'week'])
 
     return pbp
 
