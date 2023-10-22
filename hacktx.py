@@ -98,7 +98,6 @@ def winPCT_to_play(played, team, pred):
             if (game[1]['is_played']):
                 if game[1]['home_points'] < game[1]['away_points']:   
                     wins = wins + 1
-                    print(pred['Away'][1])
             else:
                 if pred['Home'][i] < pred['Away'][i]:   
                     wins = wins + 1
@@ -130,21 +129,15 @@ def makeGraph(team):
     schedule['winPCT_played'] = winPCTS_played
     schedule['winPCT_to_played'] = winPCTS_to_play
 
-    
-
-    x_played = []
+    weeks = []
     for i in range(schedule.shape[0]):
-        x_played.append(i)
-    
-    x_pred = x_played[not_played_weeks:]
-    x_played = x_played[:played_weeks]
+        weeks.append(i+1)
     
     data = {
-        'week': [1,2,3,4,5,6,7,8,9,10],
+        'week': weeks,
         'played': schedule['winPCT_played'], 
-         'predictions': schedule['winPCT_to_played']}
+        'predictions': schedule['winPCT_to_played']}
 
     df = pd.DataFrame(data)
 
     return df
-
